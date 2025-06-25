@@ -10,103 +10,147 @@ An intelligent, explainable AI-powered credit scoring application designed to pr
 
 ## 🎯 Project Motivation
 
-Traditional credit scoring models often fail to assess *“thin-file”* applicants—individuals with limited or no formal credit history. This creates a significant barrier to financial inclusion. 
+Traditional credit scoring models often fail to assess *“thin-file”* applicants—individuals with limited or no formal credit history. This creates a significant barrier to financial inclusion.
 
 **Credit-Drishti** (from Sanskrit *drishti*, meaning “vision” or “insight”) aims to solve this problem by leveraging a sophisticated dual-model AI system. It combines a high-accuracy predictive model with a fully transparent and interpretable scorecard, providing not just a decision, but a clear explanation behind it.
 
 ## ✨ Key Features
 
-- **Dual-Model Architecture:**  
-  - **"Black-Box" (LightGBM):** A high-performance gradient boosting model that accurately predicts the probability of default by capturing complex, non-linear patterns in the data.  
-  - **"Glass-Box" (WoE Scorecard):** A transparent logistic regression model that provides a simple, point-based scorecard, explaining how each applicant attribute contributes to the final score.  
-- **Explainable AI (XAI):** Every prediction is accompanied by a detailed scorecard breakdown, making the decision-making process transparent to underwriters, auditors, and even the applicants themselves.  
-- **REST API Backend:** The models are served via a robust Flask API that handles data preprocessing and prediction.  
-- **Interactive Web UI:** A user-friendly web interface built with Streamlit allows for easy input of applicant data and clear visualization of the results.  
-- **Production-Ready Code:** The application is built with best practices, including cross-validation, input validation, configuration management, and detailed logging.  
+- **Dual-Model Architecture:**
+  - **"Black-Box" (LightGBM):** A high-performance gradient boosting model that accurately predicts the probability of default.
+  - **"Glass-Box" (WoE Scorecard):** A transparent logistic regression model providing an interpretable scorecard.
+- **Explainable AI (XAI)**
+- **REST API Backend (Flask)**
+- **Interactive Streamlit UI**
+- **Production-Ready Codebase**
+
+## 📊 Core Formulas Behind the Scorecard Model
+
+### 1. Weight of Evidence (WoE)
+
+**Formula:**
+```
+WoE = ln(% of Good Customers / % of Bad Customers)
+```
+
+- **Good Customers**: Non-defaulters in the category.
+- **Bad Customers**: Defaulters in the category.
+
+**Interpretation:**
+- Positive WoE = Lower risk
+- Negative WoE = Higher risk
+
+---
+
+### 2. Information Value (IV)
+
+**Formula:**
+```
+IV = Σ [ (% of Good - % of Bad) × WoE ]
+```
+
+**IV Guidelines:**
+- < 0.02: Useless
+- 0.02–0.1: Weak
+- 0.1–0.3: Medium
+- > 0.3: Strong
+
+---
+
+### 3. Scorecard Point Calculation
+
+#### Step 1: Scaling Factor & Offset
+```
+Factor = PDO / ln(2)
+Offset = Base Score - (Factor × ln(Base Odds))
+```
+
+- PDO: Points to Double Odds (e.g., 40)
+- Base Score: e.g., 700
+- Base Odds: e.g., 50:1
+
+#### Step 2: Points Per Attribute
+```
+Points = - (WoE × β) × Factor
+```
+
+#### Step 3: Final Score
+```
+Final Score = Offset + Σ(Points)
+```
+
+---
 
 ## 🏗️ System Architecture
 
-The application operates with a simple, decoupled architecture:  
-
-User -> Streamlit Frontend -> HTTP Request -> Flask Backend API -> AI Models -> JSON Response -> Streamlit Frontend -> Display Results  
+```
+User → Streamlit Frontend → Flask API → AI Models → JSON Response → Streamlit Display
+```
 
 ## 🛠️ Technology Stack
 
-- **Backend:** Python, Flask, Gunicorn  
-- **Machine Learning:** Scikit-learn, LightGBM, Pandas, NumPy  
-- **Frontend:** Streamlit  
-- **Deployment:**  
-  - API Backend hosted on **Render**  
-  - Streamlit Frontend hosted on **Streamlit Community Cloud**  
+- **Backend:** Flask, Gunicorn
+- **ML:** Scikit-learn, LightGBM, Pandas, NumPy
+- **Frontend:** Streamlit
+- **Deployment:** Render, Streamlit Community Cloud
 
 ## ⚙️ Running the Project Locally
 
-To run this project on your own machine, follow these steps:
-
 ### Prerequisites
 
-- Python 3.8+  
-- Git  
+- Python 3.8+
+- Git
 
 ### Setup
 
-1. **Clone the Repository:**  
-   ```bash
-   git clone https://github.com/CEHCVKR/credit-drishti-app.git
-   cd credit-drishti-app
-   ```
-2. **Install Dependencies:**  
-   ```bash
-   pip install -r requirements.txt
-   ```
-3. **Train the AI Models:**  
-   ```bash
-   python train_model.py
-   ```
-4. **Run the Backend API Server:**  
-   ```bash
-   flask --app api_server.py run
-   ```
-5. **Run the Frontend Application:**  
-   ```bash
-   streamlit run app.py
-   ```
+```bash
+git clone https://github.com/CEHCVKR/credit-drishti-app.git
+cd credit-drishti-app
+pip install -r requirements.txt
+```
 
-### 📂 Project File Structure
+### Train Models
 
-```text
-├── artifacts/                # Stores trained models and other artifacts  
-├── train_model.py            # Script to train both AI models  
-├── api_server.py             # Flask backend API for predictions  
-├── app.py                    # Streamlit frontend user interface  
-├── requirements.txt          # List of Python dependencies  
-├── credit_risk_dataset.csv   # The dataset used for training  
-├── Procfile                  # Deployment configuration for Render  
-└── README.md                 # You are here!  
+```bash
+python train_model.py
+```
+
+### Start Flask API
+
+```bash
+flask --app api_server.py run
+```
+
+### Start Streamlit App
+
+```bash
+streamlit run app.py
+```
+
+## 📁 Project Structure
+
+```
+├── artifacts/                # Trained models
+├── train_model.py            # Model training script
+├── api_server.py             # Flask backend
+├── app.py                    # Streamlit frontend
+├── requirements.txt
+├── credit_risk_dataset.csv
+├── Procfile
+└── README.md
 ```
 
 ## 🧠 Model Details
 
-The system uses two models that serve different purposes:
+- **Scorecard (Logistic Regression)**: AUC ~0.86  
+- **LightGBM Model**: AUC ~0.95
 
-- **Scorecard (Logistic Regression):**  
-  - **Purpose:** Explainability and transparency.  
-  - **Methodology:** Uses Weight of Evidence (WoE) transformation to create a linear, additive scorecard.  
-  - **Performance:** Achieves a training AUC of ~0.86.  
+## 🔮 Future Improvements
 
-- **Risk Model (LightGBM):**  
-  - **Purpose:** Predictive accuracy.  
-  - **Methodology:** A powerful gradient boosting machine trained with 5-fold cross-validation for robustness.  
-  - **Performance:** Achieves a cross-validation AUC of ~0.95, making it highly effective at identifying risk.  
-
-## 🚀 Future Improvements
-
-This project provides a strong foundation. Future work could include:
-
-- **Risk-Based Pricing:** Modify the application to suggest an interest rate based on the predicted risk score.  
-- **Alternative Data Integration:** Connect to India’s Account Aggregator framework to incorporate real-time, consent-based financial data (bank statements, etc.).  
-- **MLOps Pipeline:** Build a complete MLOps pipeline using tools like MLflow or DVC for experiment tracking, model versioning, and automated retraining.  
+- Risk-based pricing
+- Integration with Account Aggregator
+- Full MLOps pipeline
 
 ## 📜 License
 
-This project is licensed under the MIT License.
+Licensed under the MIT License.
